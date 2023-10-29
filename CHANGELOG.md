@@ -1,6 +1,9 @@
 # Change log
 All notable changes to these libraries will be documented in this file in a format based on [Keep a Change log]
 
+## [1.0.8702] - 2023-10-29
+* Set Session properties when setting the device properties.
+
 ## [1.0.8697] - 2023-10-24
 * Add document info.
 * Update markdown documentation.
