@@ -171,9 +171,12 @@ End Property
 ''' <summary>   Sends an unterminated message to the instrument. </summary>
 ''' <param name="a_socket">    [<see cref="cc_isr_Winsock.IPv4StreamSocket"/>] a connected socket. </param>
 ''' <param name="a_message">   [String] The unterminated message. </param>
+''' <param name="a_delay">     [Optional, Integer, 0] the millisecond duration to add to the
+'''                            <see cref="ReadAfterWriteDelay"/>. </param>
 ''' <returns>   [Long] The number of bytes that were sent to the server. </returns>
 Public Function WriteLine(ByVal a_socket As cc_isr_Winsock.IPv4StreamSocket, _
-    ByVal a_message As String) As Long
+    ByVal a_message As String, _
+    Optional ByVal a_delay As Integer = 0) As Long
         
     Const p_procedureName As String = "WriteLine"
     
@@ -181,7 +184,7 @@ Public Function WriteLine(ByVal a_socket As cc_isr_Winsock.IPv4StreamSocket, _
     Dim p_details As String: p_details = VBA.vbNullString
     Dim p_length As Integer
     
-    p_length = Me.TryWriteLine(a_socket, a_message, p_details)
+    p_length = Me.TryWriteLine(a_socket, a_message, p_details, a_delay)
     p_success = (p_length > 0) And (0 = VBA.Len(p_details))
     
     If Not p_success Then
@@ -197,10 +200,13 @@ End Function
 ''' <param name="a_socket">    [<see cref="cc_isr_Winsock.IPv4StreamSocket"/>] a connected socket. </param>
 ''' <param name="a_message">   [String] The unterminated message. </param>
 ''' <param name="a_details">   [Out, String] details the failure. </param>
+''' <param name="a_delay">     [Optional, Integer, 0] the millisecond duration to add to the
+'''                            <see cref="ReadAfterWriteDelay"/>. </param>
 ''' <returns>   [Long]. 0 if nothing to send, negative (-1) if error,
 ''' positive if the entire message was sent. </returns>
 Public Function TryWriteLine(ByVal a_socket As cc_isr_Winsock.IPv4StreamSocket, _
-    ByVal a_message As String, ByRef a_details As String) As Long
+    ByVal a_message As String, ByRef a_details As String, _
+    Optional ByVal a_delay As Integer = 0) As Long
 
     Const p_procedureName As String = "TryWriteLine"
 
@@ -209,7 +215,7 @@ Public Function TryWriteLine(ByVal a_socket As cc_isr_Winsock.IPv4StreamSocket, 
     Dim p_length As Long
     
     p_length = a_socket.TrySendMessage(a_message & This.Termination, _
-        p_details, This.ReadAfterWriteDelay)
+        p_details, This.ReadAfterWriteDelay + a_delay)
     
     p_success = (p_length > 0) And (0 = VBA.Len(p_details))
     If Not p_success Then _
@@ -330,6 +336,8 @@ End Function
 ''' termination. </summary>
 ''' <param name="a_socket">        [<see cref="cc_isr_Winsock.IPv4StreamSocket"/>] a connected socket. </param>
 ''' <param name="a_message">       [String] The unterminated query message. </param>
+''' <param name="a_delay">         [Optional, Integer, 0] the millisecond duration to add to the
+'''                                <see cref="ReadAfterWriteDelay"/>. </param>
 ''' <param name="a_trimEnd">       [Optional, Boolean, True] True to return the string without
 '''                                the termination. </param>
 ''' <param name="a_termination">   [Optional, String, Line Feed] The character that signifies the
@@ -337,6 +345,7 @@ End Function
 ''' <returns>   [String] The received message. </returns>
 Public Function QueryLine(ByVal a_socket As cc_isr_Winsock.IPv4StreamSocket, _
     ByVal a_message As String, _
+    Optional ByVal a_delay As Integer = 0, _
     Optional ByVal a_trimEnd As Boolean = True, _
     Optional ByVal a_termination As String = vbLf) As String
 
@@ -347,7 +356,7 @@ Public Function QueryLine(ByVal a_socket As cc_isr_Winsock.IPv4StreamSocket, _
     
     Dim p_buffer As String: p_buffer = VBA.vbNullString
     Dim p_length As Long
-    p_length = Me.TryQueryLine(a_socket, a_message, p_buffer, p_details, a_trimEnd, a_termination)
+    p_length = Me.TryQueryLine(a_socket, a_message, p_buffer, p_details, a_delay, a_trimEnd, a_termination)
     p_success = (p_length >= 0) And (0 = VBA.Len(p_details))
     
     If Not p_success Then _
@@ -365,6 +374,8 @@ End Function
 ''' <param name="a_message">       [String] The unterminated query message. </param>
 ''' <param name="a_buffer">        [Out, String] the received message. </param>
 ''' <param name="a_details">       [Out, String] details the failure reason. </param>
+''' <param name="a_delay">         [Optional, Integer, 0] the millisecond duration to add to the
+'''                                <see cref="ReadAfterWriteDelay"/>. </param>
 ''' <param name="a_trimEnd">       [Optional, Boolean, True] True to return the string without
 '''                                the termination. </param>
 ''' <param name="a_termination">   [Optional, String, Line Feed] The character that signifies the
@@ -376,6 +387,7 @@ Public Function TryQueryLine(ByVal a_socket As cc_isr_Winsock.IPv4StreamSocket, 
     ByVal a_message As String, _
     ByRef a_buffer As String, _
     ByRef a_details As String, _
+    Optional ByVal a_delay As Integer = 0, _
     Optional ByVal a_trimEnd As Boolean = True, _
     Optional ByVal a_termination As String = VBA.vbLf) As Long
                          
@@ -385,7 +397,7 @@ Public Function TryQueryLine(ByVal a_socket As cc_isr_Winsock.IPv4StreamSocket, 
     Dim p_details As String: p_details = VBA.vbNullString
     Dim p_length As Long: p_length = 0
     
-    p_length = Me.TryWriteLine(a_socket, a_message, p_details)
+    p_length = Me.TryWriteLine(a_socket, a_message, p_details, a_delay)
     p_success = (p_length >= 0) And (0 = VBA.Len(p_details))
     
     If Not p_success Then
